@@ -1,9 +1,5 @@
 
-install : npm install typescript ts-node
 
-start: npx ts-node ./src/index.ts
-
-clone project repo: git clone https://github.com/mayoljonathan/products_app
 
 
 import fs from 'fs';
