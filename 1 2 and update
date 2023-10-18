@@ -1,0 +1,147 @@
+import fs from 'fs';
+
+interface Product {
+  id: string;
+  name: string;
+  unit_price: number;
+  quantity: number;
+}
+
+// Array for storing products data
+let productData: Product[] = [];
+
+// To check If data.json exist 
+
+if (fs.existsSync('./data.json')) {
+  // If it exists, read its content and parse it into the productData array
+  const fileData = fs.readFileSync('./data.json', 'utf8');
+  productData = JSON.parse(fileData);
+}
+
+// a function for adding products
+function addProduct(newProduct: Product) {
+  // checking the  duplicate products by comparing their IDs
+  const isDuplicate = productData.some((product) => product.id === newProduct.id);
+  if (isDuplicate) {
+    //display an error message if product have the same id
+    console.log('Product with the same ID already exists. Cannot add.');
+  } else {
+    // If product is unique, add it to the productData array
+    productData.push(newProduct);
+    // Write the updated product data back to 'data.json' with proper formatting (2 spaces for indentation)
+    fs.writeFileSync('./data.json', JSON.stringify(productData, null, 2));
+    // Display a success message
+    console.log('Product added successfully');
+  }
+}
+
+
+
+// Function to list all  available stocks and info 
+function listProducts() {
+  const availableProducts = productData.filter((product) => product.quantity >= 1);
+  
+  // Display the required information for each product
+  availableProducts.forEach((product) => {
+    const total_price = product.quantity * product.unit_price;
+    console.log(`Name: ${product.name}, Unit Price: ${product.unit_price}, Total Price: ${total_price}`);
+  });
+}
+
+// Example usage to add a new product
+const newProduct: Product = {
+  id: '4',
+  name: 'D',
+  quantity: 5,
+  unit_price: 45,
+};
+
+// Call the addProduct function to add the new product
+addProduct(newProduct);
+
+// Call the listProducts function to list available products and their information
+listProducts();
+
+
+
+//With update
+
+
+import fs from 'fs';
+
+interface Product {
+  id: string;
+  name: string;
+  unit_price: number;
+  quantity: number;
+}
+
+// Create an array to store product data
+let productData: Product[] = [];
+
+// Check if a JSON file named 'data.json' exists
+if (fs.existsSync('./data.json')) {
+  // If it exists, read its content and parse it into the productData array
+  const fileData = fs.readFileSync('./data.json', 'utf8');
+  productData = JSON.parse(fileData);
+}
+
+// Function to add a new product
+function addProduct(newProduct: Product) {
+  // Check for duplicate products by comparing their IDs
+  const isDuplicate = productData.some((product) => product.id === newProduct.id);
+  if (isDuplicate) {
+    // If a product with the same ID exists, display an error message
+    console.log('Product with the same ID already exists. Cannot add.');
+  } else {
+    // If the product is unique, add it to the productData array
+    productData.push(newProduct);
+    // Write the updated product data back to 'data.json' with proper formatting (2 spaces for indentation)
+    fs.writeFileSync('./data.json', JSON.stringify(productData, null, 2));
+    // Display a success message
+    console.log('Product added successfully');
+  }
+}
+
+// Function to list all products with available stocks and their information
+function listProducts() {
+  const availableProducts = productData.filter((product) => product.quantity >= 1);
+  
+  // Display the required information for each product
+  availableProducts.forEach((product) => {
+    const total_price = product.quantity * product.unit_price;
+    console.log(`Name: ${product.name}, Unit Price: ${product.unit_price}, Total Price: ${total_price}`);
+  });
+}
+
+// Function to update a product's quantity and unit price based on the given product ID
+function updateProduct(productId: string, newQuantity: number, newUnitPrice: number) {
+  const productIndex = productData.findIndex((product) => product.id === productId);
+  if (productIndex === -1) {
+    console.log('Product with the provided ID does not exist. Cannot update.');
+  } else {
+    // Update the product's quantity and unit price
+    productData[productIndex].quantity = newQuantity;
+    productData[productIndex].unit_price = newUnitPrice;
+    // Write the updated product data back to 'data.json'
+    fs.writeFileSync('./data.json', JSON.stringify(productData, null, 2));
+    // Display a success message
+    console.log('Product updated successfully');
+    // List all products to show the updated list
+    listProducts();
+  }
+}
+
+// Example usage to update a product
+updateProduct('4', 10, 55);
+
+// Example usage to add a new product
+const newProduct: Product = {
+  id: '5',
+  name: 'E',
+  quantity: 7,
+  unit_price: 60,
+};
+
+// Call the addProduct function to add the new product
+addProduct(newProduct);
