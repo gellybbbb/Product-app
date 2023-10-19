@@ -1,0 +1,119 @@
+import fs from 'fs';
+
+interface Product {
+   id: string;
+   name: string;
+   unit_price: number;
+   quantity: number;
+}
+
+let productData: Product[] = [];
+
+const readProductData = () => {
+    return new Promise<void>((resolve, reject) => {
+        fs.readFile('./data.json', 'utf8', (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                productData = JSON.parse(data);
+                resolve();
+            }
+        });
+    });
+};
+
+const writeProductData = () => {
+    return new Promise<void>((resolve, reject) => {
+        fs.writeFile('./data.json', JSON.stringify(productData, null, 2), (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
+/* CREATE A PRODUCT */
+
+async function addProduct(newProduct: Product) {
+    const isDuplicate = productData.some((product) => product.id === newProduct.id);
+    if (isDuplicate) {
+        console.log('ERROR!! PRODUCT WITH THE SAME ID ALREADY EXISTS.');
+    } else {
+        productData.push(newProduct);
+        await writeProductData();
+        console.log('PRODUCT ADDED SUCCESSFULLY');
+    }
+}
+
+/* LIST ALL PRODUCTS */
+
+function productList() {
+    const availableStocks = productData.filter((product) => product.quantity >= 1);
+    availableStocks.sort((a, b) => b.id.localeCompare(a.id));
+
+    availableStocks.forEach((product) => {
+        const total_price = product.unit_price * product.quantity;
+        console.log(`Product Name: ${product.name}\tUnit Price: ${product.unit_price}\tTotal Price: ${total_price}`);
+    });
+}
+
+/* UPDATE PRODUCTS */
+
+async function updateProduct(productId: string, quantity: number, unitPrice: number) {
+    const productIndex = productData.findIndex((product) => product.id === productId);
+    if (productIndex === -1) {
+        console.log('Product with the provided ID doesn\'t exist. Can\'t update!');
+    } else {
+        productData[productIndex].quantity = quantity;
+        productData[productIndex].unit_price = unitPrice;
+
+        await writeProductData();
+        console.log('PRODUCT UPDATED SUCCESSFULLY');
+    }
+}
+
+/* REMOVE A PRODUCT */
+
+async function removeProduct(productId: string) {
+    const productIndex = productData.findIndex((product) => product.id === productId);
+    if (productIndex === -1) {
+        console.log('Product with the provided ID doesn\'t exist. Can\'t remove!');
+    } else {
+        productData.splice(productIndex, 1);
+        await writeProductData();
+        console.log('PRODUCT REMOVED SUCCESSFULLY');
+    }
+}
+
+// Example usage of the functions
+
+const newProduct: Product = {
+    id: "17",
+    name: "Sofa",
+    quantity: 53,
+    unit_price: 45
+};
+
+addProduct(newProduct);
+productList();
+
+const productUpdates: Product = {
+    id: "2",
+    quantity: 23,
+    unit_price: 2,
+    name: ''
+};
+
+updateProduct(productUpdates.id, productUpdates.quantity, productUpdates.unit_price);
+productList();
+
+const productToRemove: Product = {
+    id: "2",
+    name: '',
+    unit_price: 0,
+    quantity: 0
+};
+
+removeProduct(productToRemove.id);
