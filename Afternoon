@@ -1,0 +1,92 @@
+const http = require('http');
+const fs = require('fs');
+
+function reqListener(req, res) {
+  const url = req.url;
+  const method = req.method;
+
+  if (url === '/') {
+    res.write('<html>');
+    res.write('<head><title>Enter User Information</title></head>');
+    res.write(
+      '<body><form action="/saveUser" method="POST">' +
+        '<input type="text" name="firstName" placeholder="First Name">' +
+        '<input type="text" name="lastName" placeholder="Last Name">' +
+        '<button type="submit">Save User</button>' +
+        '</form></body>'
+    );
+    res.write('</html>');
+    return res.end();
+  }
+
+  if (url === '/saveUser' && method === 'POST') {
+    const body = [];
+    req.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    req.on('end', () => {
+      const parsedBody = Buffer.concat(body).toString();
+      const formData = parsedBody.split('&').reduce((acc, current) => {
+        const [key, value] = current.split('=');
+        acc[key] = decodeURIComponent(value);
+        return acc;
+      }, {});
+
+      // Save user information to JSON file
+      saveUser(formData, (err) => {
+        if (err) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'text/plain');
+          res.end('Error saving user information');
+        } else {
+          res.statusCode = 302;
+          res.setHeader('Location', '/');
+          res.end();
+        }
+      });
+    });
+  }
+
+  if (url === '/getUsers' && method === 'GET') {
+    // Retrieve user information from JSON file
+    getUsers((err, users) => {
+      if (err) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Error retrieving user information');
+      } else {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(users));
+      }
+    });
+  }
+}
+
+const server = http.createServer(reqListener);
+
+server.listen(3000);
+
+function saveUser(user, callback) {
+  fs.readFile('users.json', (err, data) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    const users = JSON.parse(data);
+    users.push(user);
+    fs.writeFile('users.json', JSON.stringify(users, null, 2), callback);
+  });
+}
+
+function getUsers(callback) {
+  fs.readFile('users.json', (err, data) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    const users = JSON.parse(data);
+    callback(null, users);
+  });
+}
